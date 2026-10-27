@@ -27,6 +27,25 @@ html, body, [class*="css"], .stApp {
     color: #f1f5f9;
 }
 
+/* Fix header clipping, laptop responsiveness, and top container spacing */
+header[data-testid="stHeader"] {
+    background: rgba(7, 13, 24, 0.75) !important;
+    backdrop-filter: blur(10px) !important;
+    height: 3.25rem !important;
+    z-index: 100 !important;
+}
+.block-container, [data-testid="stMainBlockContainer"] {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2.5rem !important;
+    padding-left: clamp(1rem, 2.5vw, 2.5rem) !important;
+    padding-right: clamp(1rem, 2.5vw, 2.5rem) !important;
+    max-width: 100% !important;
+}
+
+[data-testid="stVerticalBlock"] {
+    gap: 0.85rem !important;
+}
+
 /* Background Atmosphere */
 .stApp {
     background: radial-gradient(circle at 10% 20%, rgba(0, 230, 153, 0.04) 0%, transparent 35%),
@@ -60,7 +79,7 @@ h4, h5, h6 {
 }
 .stCaption, [data-testid="stCaptionContainer"] {
     color: #94a3b8 !important;
-    font-size: 0.9rem !important;
+    font-size: 0.88rem !important;
 }
 
 /* Command Center Header Banner */
@@ -68,8 +87,9 @@ h4, h5, h6 {
     background: linear-gradient(135deg, rgba(13, 24, 43, 0.9) 0%, rgba(15, 29, 53, 0.7) 100%);
     border: 1px solid rgba(0, 230, 153, 0.2);
     border-radius: 16px;
-    padding: 24px 28px;
-    margin-bottom: 24px;
+    padding: clamp(16px, 2.2vw, 24px) clamp(18px, 2.5vw, 28px);
+    margin-top: 0.25rem;
+    margin-bottom: 18px;
     box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     position: relative;
     overflow: hidden;
@@ -80,18 +100,23 @@ h4, h5, h6 {
     top: 0; left: 0; right: 0; height: 3px;
     background: linear-gradient(90deg, #00e699, #0ea5e9, #8b5cf6);
 }
+.ww-header-box h1 {
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem) !important;
+    margin: 0 !important;
+    line-height: 1.25 !important;
+}
 .ww-tag {
     display: inline-block;
-    padding: 4px 10px;
+    padding: 3px 10px;
     border-radius: 9999px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     background: rgba(0, 230, 153, 0.15);
     color: #00e699;
     border: 1px solid rgba(0, 230, 153, 0.3);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 .ww-status-badge {
     display: inline-flex;
@@ -99,7 +124,7 @@ h4, h5, h6 {
     gap: 6px;
     padding: 4px 12px;
     border-radius: 9999px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     background: rgba(16, 185, 129, 0.12);
     color: #34d399;
@@ -110,23 +135,23 @@ h4, h5, h6 {
 .ww-kpi-card {
     background: linear-gradient(145deg, #0e192d 0%, #0a1324 100%);
     border: 1px solid rgba(255, 255, 255, 0.07);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 14px;
+    padding: clamp(14px, 1.8vw, 18px);
     position: relative;
-    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .ww-kpi-card:hover {
     transform: translateY(-2px);
     border-color: rgba(0, 230, 153, 0.35);
-    box-shadow: 0 12px 28px -6px rgba(0, 230, 153, 0.15);
+    box-shadow: 0 10px 24px -4px rgba(0, 230, 153, 0.15);
 }
 .ww-kpi-card.urgent {
     border-left: 4px solid #f43f5e;
 }
 .ww-kpi-card.urgent:hover {
     border-color: rgba(244, 63, 94, 0.4);
-    box-shadow: 0 12px 28px -6px rgba(244, 63, 94, 0.18);
+    box-shadow: 0 10px 24px -4px rgba(244, 63, 94, 0.18);
 }
 .ww-kpi-card.pending {
     border-left: 4px solid #f59e0b;
@@ -138,12 +163,12 @@ h4, h5, h6 {
     border-left: 4px solid #00e699;
 }
 .ww-kpi-icon {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     line-height: 1;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 .ww-kpi-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -151,25 +176,25 @@ h4, h5, h6 {
     margin-bottom: 4px;
 }
 .ww-kpi-value {
-    font-size: 1.9rem;
+    font-size: clamp(1.4rem, 2vw, 1.8rem);
     font-weight: 800;
     color: #f8fafc;
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1.15;
 }
 .ww-kpi-sub {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: #64748b;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
-/* Glass Section Container */
-.ww-panel {
-    background: rgba(13, 24, 43, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 16px;
-    padding: 22px;
-    margin-bottom: 20px;
+/* Plotly Visual Card Container */
+.js-plotly-plot {
+    background: linear-gradient(145deg, rgba(13, 24, 43, 0.65) 0%, rgba(10, 19, 36, 0.75) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+    overflow: hidden !important;
 }
 
 /* Streamlit Native Widget Polishing */
@@ -248,7 +273,7 @@ div[data-testid="stExpander"] {
     background: rgba(13, 24, 43, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 14px !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 16px !important;
 }
 
 /* Table Card Enhancements */
@@ -262,24 +287,62 @@ div[data-testid="stExpander"] {
 div[data-testid="stRadio"] > label {
     display: none !important;
 }
-div[data-testid="stRadio"] div[role="radiogroup"] > label {
+div[data-testid="stRadio"] [role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    width: 100% !important;
+}
+[data-testid="stRadioOption"],
+div[data-testid="stRadio"] [role="radiogroup"] label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
     background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
     border-radius: 10px !important;
     padding: 10px 14px !important;
-    margin-bottom: 6px !important;
-    transition: all 0.18s ease !important;
-    color: #cbd5e1 !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease !important;
+}
+[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stRadioOption"] p,
+div[data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stMarkdownContainer"] p {
+    color: #94a3b8 !important;
     font-weight: 500 !important;
+    font-size: 0.92rem !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+    transition: color 0.2s ease !important;
 }
-div[data-testid="stRadio"] div[role="radiogroup"] > label:hover {
-    background: rgba(0, 230, 153, 0.08) !important;
+[data-testid="stRadioOption"]:hover,
+div[data-testid="stRadio"] [role="radiogroup"] label:hover {
+    background: rgba(0, 230, 153, 0.06) !important;
     border-color: rgba(0, 230, 153, 0.25) !important;
-    color: #f8fafc !important;
 }
-div[data-testid="stRadio"] div[role="radiogroup"] > label[data-checked="true"] {
-    background: linear-gradient(90deg, rgba(0, 230, 153, 0.15) 0%, rgba(14, 165, 233, 0.08) 100%) !important;
-    border-color: #00e699 !important;
+[data-testid="stRadioOption"]:hover [data-testid="stMarkdownContainer"] p,
+[data-testid="stRadioOption"]:hover p,
+div[data-testid="stRadio"] [role="radiogroup"] label:hover div[data-testid="stMarkdownContainer"] p {
+    color: #f1f5f9 !important;
+}
+/* Selected active state */
+[data-testid="stRadioOption"][data-selected="true"],
+[data-testid="stRadioOption"]:has(input:checked),
+div[data-testid="stRadio"] [role="radiogroup"] label:has(input:checked),
+div[data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] {
+    background: linear-gradient(90deg, rgba(0, 230, 153, 0.16) 0%, rgba(14, 165, 233, 0.08) 100%) !important;
+    border: 1px solid #00e699 !important;
+    box-shadow: 0 2px 10px rgba(0, 230, 153, 0.15) !important;
+}
+[data-testid="stRadioOption"][data-selected="true"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stRadioOption"][data-selected="true"] p,
+[data-testid="stRadioOption"]:has(input:checked) [data-testid="stMarkdownContainer"] p,
+[data-testid="stRadioOption"]:has(input:checked) p,
+div[data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p,
+div[data-testid="stRadio"] [role="radiogroup"] label[data-checked="true"] div[data-testid="stMarkdownContainer"] p {
     color: #00e699 !important;
     font-weight: 700 !important;
 }
@@ -373,32 +436,41 @@ def action(callback, *args):
         st.error(f'Unable to save operation: {exc}')
 
 
-def apply_plotly_theme(fig, height=360):
+def apply_plotly_theme(fig, height=350, show_legend=True, legend_orientation='h'):
     fig.update_layout(
         template='plotly_dark',
-        paper_bgcolor='rgba(13, 24, 43, 0.4)',
-        plot_bgcolor='rgba(13, 24, 43, 0.4)',
-        font=dict(family='Plus Jakarta Sans, sans-serif', color='#e2e8f0', size=12),
-        margin=dict(l=18, r=18, t=44, b=18),
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        font=dict(family='Plus Jakarta Sans, sans-serif', color='#e2e8f0', size=11),
+        margin=dict(l=55, r=25, t=65, b=45),
         height=height,
-        title_font=dict(size=15, color='#f8fafc', family='Plus Jakarta Sans, sans-serif'),
+        title=dict(
+            font=dict(size=14, color='#f8fafc', family='Plus Jakarta Sans, sans-serif'),
+            x=0.03,
+            y=0.96,
+            xanchor='left',
+            yanchor='top'
+        ),
+        showlegend=show_legend,
         legend=dict(
-            orientation='h',
+            orientation=legend_orientation,
             yanchor='bottom',
-            y=1.02,
+            y=1.04,
             xanchor='right',
-            x=1,
+            x=0.98,
             font=dict(size=11, color='#94a3b8')
         ),
         xaxis=dict(
             gridcolor='rgba(255, 255, 255, 0.05)',
             zerolinecolor='rgba(255, 255, 255, 0.08)',
-            tickfont=dict(color='#94a3b8')
+            tickfont=dict(color='#94a3b8', size=11),
+            title_standoff=10
         ),
         yaxis=dict(
             gridcolor='rgba(255, 255, 255, 0.05)',
             zerolinecolor='rgba(255, 255, 255, 0.08)',
-            tickfont=dict(color='#94a3b8')
+            tickfont=dict(color='#94a3b8', size=11),
+            title_standoff=12
         )
     )
     return fig
@@ -529,14 +601,11 @@ if page == 'Dashboard':
         </div>
         ''', unsafe_allow_html=True)
 
-    st.write('')
-
     if df.empty:
         st.info('No bin records found in database. Use Manage Bins to register initial bins.')
     else:
         left, right = st.columns([1.1, 0.9])
         with left:
-            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
             area_df = df.groupby('area', as_index=False)['estimated_waste_liters'].sum().sort_values('estimated_waste_liters', ascending=False)
             fig_area = px.bar(
                 area_df,
@@ -548,12 +617,10 @@ if page == 'Dashboard':
                 color_continuous_scale=[[0, '#059669'], [0.5, '#10b981'], [1, '#00e699']]
             )
             fig_area.update_coloraxes(showscale=False)
-            apply_plotly_theme(fig_area, height=340)
+            apply_plotly_theme(fig_area, height=350, show_legend=False)
             st.plotly_chart(fig_area, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with right:
-            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
             status_df = df.groupby('status', as_index=False).size()
             fig_status = px.pie(
                 status_df,
@@ -568,9 +635,12 @@ if page == 'Dashboard':
                     'Collected': '#10b981'
                 }
             )
-            apply_plotly_theme(fig_status, height=340)
+            apply_plotly_theme(fig_status, height=350)
+            fig_status.update_layout(
+                legend=dict(orientation='h', yanchor='top', y=-0.08, xanchor='center', x=0.5),
+                margin=dict(l=20, r=20, t=55, b=45)
+            )
             st.plotly_chart(fig_status, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         # Urgent Collection Queue Section
         st.markdown('''
@@ -639,9 +709,8 @@ elif page == 'Manage Bins':
     )
 
     if not df.empty:
-        st.write('')
         st.markdown('''
-        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; margin-top: 10px;">
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 14px;">
             <h3>Update Container Telemetry or Decommission</h3>
             <p style="color: #94a3b8; font-size: 0.88rem;">Select an existing container record to update its operational parameters or retire it from the active database.</p>
         </div>
@@ -705,8 +774,6 @@ elif page == 'Collection Queue':
 
     if df.empty:
         st.info('No containers currently registered in the database.')
-    else:
-        st.write('')
         st.markdown('### Operational Dispatch Hub')
         q_left, q_right = st.columns(2)
 
@@ -714,35 +781,35 @@ elif page == 'Collection Queue':
 
         with q_left:
             st.markdown('''
-            <div class="ww-panel" style="border-top: 3px solid #f43f5e;">
-                <h4 style="color: #f8fafc; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+            <div style="border-top: 3px solid #f43f5e; padding: 14px 18px; background: rgba(13, 24, 43, 0.65); border-radius: 12px; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;">
+                <h4 style="color: #f8fafc; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
                     <span>🚨</span> Citizen / Field Overflow Report
                 </h4>
-                <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">
+                <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
                     Escalates container priority directly to <b>HIGH</b> and flags for urgent sanitation dispatch.
                 </p>
+            </div>
             ''', unsafe_allow_html=True)
             selected_report = st.selectbox('Select Container to Flag', list(choices), format_func=lambda v: choices[v], key='report')
             if st.button('🚨 Submit Overflow Escalation', type='primary', use_container_width=True):
                 action(report_overflow, selected_report)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with q_right:
             st.markdown('''
-            <div class="ww-panel" style="border-top: 3px solid #00e699;">
-                <h4 style="color: #f8fafc; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+            <div style="border-top: 3px solid #00e699; padding: 14px 18px; background: rgba(13, 24, 43, 0.65); border-radius: 12px; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;">
+                <h4 style="color: #f8fafc; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
                     <span>🚚</span> Update Collection Workflow
                 </h4>
-                <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">
+                <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
                     Advance container cycle: <i>Pending → In Progress → Collected</i>.
                 </p>
+            </div>
             ''', unsafe_allow_html=True)
             selected_status = st.selectbox('Select Target Container', list(choices), format_func=lambda v: choices[v], key='status_bin')
             current = df[df.id == selected_status].iloc[0].status
             new_status = st.selectbox('New Lifecycle Status', STATUSES, index=STATUSES.index(current))
             if st.button('✅ Confirm Status Transition', type='primary', use_container_width=True):
                 action(change_status, selected_status, new_status)
-            st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==============================================================================
@@ -764,7 +831,6 @@ else:
     else:
         left, right = st.columns(2)
         with left:
-            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
             by_type = df.groupby('waste_type', as_index=False)['estimated_waste_liters'].sum().sort_values('estimated_waste_liters', ascending=False)
             fig_type = px.bar(
                 by_type,
@@ -775,12 +841,10 @@ else:
                 color='waste_type',
                 color_discrete_sequence=['#00e699', '#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#64748b']
             )
-            apply_plotly_theme(fig_type, height=330)
+            apply_plotly_theme(fig_type, height=350, show_legend=False)
             st.plotly_chart(fig_type, use_container_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
 
         with right:
-            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
             trend = df.copy()
             trend['date'] = pd.to_datetime(trend['collected_at'], errors='coerce').dt.date
             trend = trend[trend.status == 'Collected'].dropna(subset=['date'])
@@ -795,16 +859,15 @@ else:
                     labels={'estimated_waste_liters': 'Collected Volume (Liters)', 'date': 'Collection Date'}
                 )
                 fig_trend.update_traces(line_color='#00e699', line_width=3, marker=dict(size=8, color='#38bdf8'))
-                apply_plotly_theme(fig_trend, height=330)
+                apply_plotly_theme(fig_trend, height=350, show_legend=False)
                 st.plotly_chart(fig_trend, use_container_width=True)
             else:
                 st.info('ℹ️ Mark containers as "Collected" to populate daily collection trend series.')
-            st.markdown('</div>', unsafe_allow_html=True)
 
         # PySpark Big Data Analytics Engine Deck
         st.markdown('''
-        <div class="ww-panel" style="border: 1px solid rgba(0, 230, 153, 0.25); background: linear-gradient(135deg, rgba(13, 24, 43, 0.8) 0%, rgba(10, 20, 38, 0.9) 100%);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <div style="border: 1px solid rgba(0, 230, 153, 0.25); background: linear-gradient(135deg, rgba(13, 24, 43, 0.8) 0%, rgba(10, 20, 38, 0.9) 100%); border-radius: 14px; padding: 18px 22px; margin-top: 10px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
                 <div>
                     <span class="ww-tag" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border-color: rgba(14, 165, 233, 0.3);">
                         Engine: Apache Spark 3.5.x local[1]
@@ -812,9 +875,10 @@ else:
                     <h3 style="margin: 6px 0 0 0; color: #f8fafc;">PySpark Big Data Analytics Execution</h3>
                 </div>
             </div>
-            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">
+            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin: 0;">
                 Executes true PySpark DataFrame transformations (<code>groupBy</code>, <code>agg</code>, <code>sum</code>, <code>count</code>, and conditional high-priority filters) over strongly typed schemas. This demonstrates Big Data distributed computing concepts natively within the local Python runtime.
             </p>
+        </div>
         ''', unsafe_allow_html=True)
 
         if st.button('⚡ Launch PySpark Analytics Engine', type='primary'):
@@ -828,7 +892,6 @@ else:
 
         if 'spark_results' in st.session_state:
             results = st.session_state['spark_results']
-            st.write('')
             a, b = st.columns(2)
             with a:
                 st.markdown('**Spark: Area-Wise Aggregation**')
@@ -846,7 +909,6 @@ else:
                 file_name='wastewise_spark_area.csv',
                 mime='text/csv'
             )
-        st.markdown('</div>', unsafe_allow_html=True)
 
         # Full Data Export Section
         st.markdown('''
