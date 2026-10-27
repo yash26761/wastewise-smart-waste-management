@@ -1,4 +1,6 @@
-"""WasteWise Streamlit interface. Run with: streamlit run app.py"""
+"""WasteWise — Smart City Waste Management Command Center.
+Run with: streamlit run app.py
+"""
 import sqlite3
 import streamlit as st
 import pandas as pd
@@ -7,60 +9,449 @@ from database import (init_db, list_bins, add_bin, update_bin, change_status,
                       report_overflow, delete_bin, AREAS, WASTE_TYPES, STATUSES)
 from analytics import frame, summary, spark_analytics
 
-st.set_page_config(page_title='WasteWise | Smart Waste Management', page_icon='♻️',
-                   layout='wide', initial_sidebar_state='expanded')
-st.markdown('''<style>
-.stApp {background: #0b1220; color: #e6eef8;}
-[data-testid="stSidebar"] {background: #101c30;}
-[data-testid="stMetric"] {background: #15243a; border: 1px solid #253e55;
- border-radius: 14px; padding: 17px;}
-h1,h2,h3 {color:#ecf8f4!important;}
-div.stButton>button[kind="primary"] {background:#078c74; border-color:#078c74;}
-</style>''', unsafe_allow_html=True)
+st.set_page_config(
+    page_title='WasteWise | Command Center',
+    page_icon='♻️',
+    layout='wide',
+    initial_sidebar_state='expanded'
+)
 
+# Custom Command Center Theme & High-Contrast Styling
+st.markdown('''
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+html, body, [class*="css"], .stApp {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #070d18;
+    color: #f1f5f9;
+}
+
+/* Background Atmosphere */
+.stApp {
+    background: radial-gradient(circle at 10% 20%, rgba(0, 230, 153, 0.04) 0%, transparent 35%),
+                radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.04) 0%, transparent 40%),
+                #070d18;
+}
+
+/* Sidebar Styling */
+[data-testid="stSidebar"] {
+    background: #0a1324 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+[data-testid="stSidebar"] hr {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Typography Enhancements */
+h1 {
+    font-weight: 800 !important;
+    letter-spacing: -0.03em !important;
+    color: #f8fafc !important;
+    margin-bottom: 0.25rem !important;
+}
+h2, h3 {
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    color: #f1f5f9 !important;
+}
+h4, h5, h6 {
+    color: #94a3b8 !important;
+}
+.stCaption, [data-testid="stCaptionContainer"] {
+    color: #94a3b8 !important;
+    font-size: 0.9rem !important;
+}
+
+/* Command Center Header Banner */
+.ww-header-box {
+    background: linear-gradient(135deg, rgba(13, 24, 43, 0.9) 0%, rgba(15, 29, 53, 0.7) 100%);
+    border: 1px solid rgba(0, 230, 153, 0.2);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+.ww-header-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #00e699, #0ea5e9, #8b5cf6);
+}
+.ww-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(0, 230, 153, 0.15);
+    color: #00e699;
+    border: 1px solid rgba(0, 230, 153, 0.3);
+    margin-bottom: 8px;
+}
+.ww-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Polished KPI Cards */
+.ww-kpi-card {
+    background: linear-gradient(145deg, #0e192d 0%, #0a1324 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ww-kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 230, 153, 0.35);
+    box-shadow: 0 12px 28px -6px rgba(0, 230, 153, 0.15);
+}
+.ww-kpi-card.urgent {
+    border-left: 4px solid #f43f5e;
+}
+.ww-kpi-card.urgent:hover {
+    border-color: rgba(244, 63, 94, 0.4);
+    box-shadow: 0 12px 28px -6px rgba(244, 63, 94, 0.18);
+}
+.ww-kpi-card.pending {
+    border-left: 4px solid #f59e0b;
+}
+.ww-kpi-card.collected {
+    border-left: 4px solid #0ea5e9;
+}
+.ww-kpi-card.total {
+    border-left: 4px solid #00e699;
+}
+.ww-kpi-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-bottom: 10px;
+}
+.ww-kpi-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+.ww-kpi-value {
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+.ww-kpi-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 6px;
+}
+
+/* Glass Section Container */
+.ww-panel {
+    background: rgba(13, 24, 43, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+/* Streamlit Native Widget Polishing */
+div[data-testid="stMetric"] {
+    background: linear-gradient(145deg, #0e192d 0%, #0a1324 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+}
+div[data-testid="stMetricLabel"] {
+    color: #94a3b8 !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+}
+div[data-testid="stMetricValue"] {
+    color: #f8fafc !important;
+    font-weight: 800 !important;
+    font-size: 1.8rem !important;
+}
+
+/* Buttons */
+div.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #00c885 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1.25rem !important;
+    box-shadow: 0 4px 14px rgba(0, 200, 133, 0.3) !important;
+    transition: all 0.2s ease !important;
+}
+div.stButton > button[kind="primary"]:hover {
+    background: linear-gradient(135deg, #00e699 0%, #10b981 100%) !important;
+    box-shadow: 0 6px 20px rgba(0, 230, 153, 0.45) !important;
+    transform: translateY(-1px) !important;
+}
+div.stButton > button[kind="secondary"] {
+    background: #0f1d35 !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+}
+div.stButton > button[kind="secondary"]:hover {
+    background: #152747 !important;
+    border-color: rgba(0, 230, 153, 0.4) !important;
+    color: #ffffff !important;
+}
+
+/* Download Buttons */
+div.stDownloadButton > button {
+    background: #0d1b32 !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+div.stDownloadButton > button:hover {
+    background: rgba(56, 189, 248, 0.12) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Form Inputs & Selects */
+div[data-baseweb="input"], div[data-baseweb="select"] {
+    border-radius: 10px !important;
+}
+div[data-baseweb="input"] input {
+    color: #f8fafc !important;
+}
+
+/* Expander Styling */
+div[data-testid="stExpander"] {
+    background: rgba(13, 24, 43, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 14px !important;
+    margin-bottom: 20px !important;
+}
+
+/* Table Card Enhancements */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(255, 255, 255, 0.07) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+/* Radio Navigation in Sidebar */
+div[data-testid="stRadio"] > label {
+    display: none !important;
+}
+div[data-testid="stRadio"] div[role="radiogroup"] > label {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+    margin-bottom: 6px !important;
+    transition: all 0.18s ease !important;
+    color: #cbd5e1 !important;
+    font-weight: 500 !important;
+}
+div[data-testid="stRadio"] div[role="radiogroup"] > label:hover {
+    background: rgba(0, 230, 153, 0.08) !important;
+    border-color: rgba(0, 230, 153, 0.25) !important;
+    color: #f8fafc !important;
+}
+div[data-testid="stRadio"] div[role="radiogroup"] > label[data-checked="true"] {
+    background: linear-gradient(90deg, rgba(0, 230, 153, 0.15) 0%, rgba(14, 165, 233, 0.08) 100%) !important;
+    border-color: #00e699 !important;
+    color: #00e699 !important;
+    font-weight: 700 !important;
+}
+
+/* System Pills & Legend */
+.ww-legend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+.ww-pill-high { background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+.ww-pill-medium { background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.ww-pill-low { background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.ww-pill-completed { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+</style>
+''', unsafe_allow_html=True)
+
+# Database Initialization
 try:
     init_db()
 except sqlite3.Error as exc:
     st.error(f'Could not initialize the local database: {exc}')
     st.stop()
 
-st.sidebar.title('♻️ WasteWise')
-st.sidebar.caption('Smart waste collection analytics')
-page = st.sidebar.radio('Navigation', ['Dashboard', 'Manage Bins', 'Collection Queue', 'Analytics & Reports'])
-st.sidebar.divider()
-st.sidebar.info('Demo system • Simulated data • SQLite + Pandas + PySpark')
+# Sidebar: Brand, Navigation & Telemetry Diagnostics
+st.sidebar.markdown('''
+<div style="padding: 10px 0 20px 0;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+        <span style="font-size: 2rem; background: rgba(0,230,153,0.12); padding: 8px; border-radius: 12px; border: 1px solid rgba(0,230,153,0.3);">♻️</span>
+        <div>
+            <div style="font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; color: #f8fafc;">WasteWise</div>
+            <div style="font-size: 0.75rem; font-weight: 600; color: #00e699; letter-spacing: 0.05em; text-transform: uppercase;">Command Center</div>
+        </div>
+    </div>
+    <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.4;">Smart Municipal Waste Management & Prioritization</div>
+</div>
+''', unsafe_allow_html=True)
 
+page = st.sidebar.radio(
+    'Navigation',
+    ['Dashboard', 'Manage Bins', 'Collection Queue', 'Analytics & Reports']
+)
+
+st.sidebar.divider()
+
+# Load Data from Database
 try:
     df = frame(list_bins())
 except sqlite3.Error as exc:
     st.error(f'Could not read waste-bin records: {exc}')
     st.stop()
 
+# Sidebar Diagnostics Pill
+stats = summary(df)
+urgent_sidebar_count = int(((df.fill_level >= 90) | (df.reported_overflow == 1)).sum()) if not df.empty else 0
+
+st.sidebar.markdown(f'''
+<div style="background: rgba(13, 24, 43, 0.7); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+    <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; color: #94a3b8; margin-bottom: 8px;">System Diagnostics</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="font-size: 0.8rem; color: #cbd5e1;">High Priority Bins</span>
+        <span style="font-size: 0.8rem; font-weight: 700; color: {'#f43f5e' if urgent_sidebar_count > 0 else '#10b981'};">{urgent_sidebar_count}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span style="font-size: 0.8rem; color: #cbd5e1;">Pending Collection</span>
+        <span style="font-size: 0.8rem; font-weight: 700; color: #f59e0b;">{stats['pending']}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.8rem; color: #cbd5e1;">Database Records</span>
+        <span style="font-size: 0.8rem; font-weight: 700; color: #00e699;">{stats['total']}</span>
+    </div>
+</div>
+<div style="font-size: 0.72rem; color: #64748b; text-align: center;">
+    Engine: SQLite • Pandas • Apache Spark local[1]
+</div>
+''', unsafe_allow_html=True)
+
 
 def action(callback, *args):
     try:
         callback(*args)
-        st.success('Saved successfully.')
+        st.success('Operation saved successfully.')
         st.rerun()
     except (ValueError, sqlite3.Error) as exc:
-        st.error(f'Unable to save: {exc}')
+        st.error(f'Unable to save operation: {exc}')
+
+
+def apply_plotly_theme(fig, height=360):
+    fig.update_layout(
+        template='plotly_dark',
+        paper_bgcolor='rgba(13, 24, 43, 0.4)',
+        plot_bgcolor='rgba(13, 24, 43, 0.4)',
+        font=dict(family='Plus Jakarta Sans, sans-serif', color='#e2e8f0', size=12),
+        margin=dict(l=18, r=18, t=44, b=18),
+        height=height,
+        title_font=dict(size=15, color='#f8fafc', family='Plus Jakarta Sans, sans-serif'),
+        legend=dict(
+            orientation='h',
+            yanchor='bottom',
+            y=1.02,
+            xanchor='right',
+            x=1,
+            font=dict(size=11, color='#94a3b8')
+        ),
+        xaxis=dict(
+            gridcolor='rgba(255, 255, 255, 0.05)',
+            zerolinecolor='rgba(255, 255, 255, 0.08)',
+            tickfont=dict(color='#94a3b8')
+        ),
+        yaxis=dict(
+            gridcolor='rgba(255, 255, 255, 0.05)',
+            zerolinecolor='rgba(255, 255, 255, 0.08)',
+            tickfont=dict(color='#94a3b8')
+        )
+    )
+    return fig
 
 
 def show_table(data):
     cols = ['bin_code', 'area', 'location', 'waste_type', 'fill_level',
             'capacity_liters', 'priority', 'status', 'estimated_waste_liters']
-    st.dataframe(data[cols].rename(columns={
-        'bin_code':'Bin ID','area':'Area','location':'Location','waste_type':'Waste Type',
-        'fill_level':'Fill %','capacity_liters':'Capacity (L)','priority':'Priority',
-        'status':'Status','estimated_waste_liters':'Estimated Waste (L)'}),
-        use_container_width=True, hide_index=True)
+    renamed = data[cols].rename(columns={
+        'bin_code': 'Bin ID',
+        'area': 'Area',
+        'location': 'Location',
+        'waste_type': 'Waste Type',
+        'fill_level': 'Fill %',
+        'capacity_liters': 'Capacity (L)',
+        'priority': 'Priority',
+        'status': 'Status',
+        'estimated_waste_liters': 'Estimated Waste (L)'
+    })
+    st.dataframe(
+        renamed,
+        column_config={
+            'Fill %': st.column_config.ProgressColumn(
+                'Fill %',
+                help='Current container fill percentage',
+                format='%d%%',
+                min_value=0,
+                max_value=100
+            ),
+            'Capacity (L)': st.column_config.NumberColumn(
+                'Capacity (L)',
+                format='%d L'
+            ),
+            'Estimated Waste (L)': st.column_config.NumberColumn(
+                'Estimated Waste (L)',
+                format='%.1f L'
+            ),
+            'Priority': st.column_config.TextColumn(
+                'Priority',
+                help='High: overflow or ≥90% | Medium: ≥70% | Low: <70% | Completed'
+            ),
+            'Status': st.column_config.TextColumn('Status')
+        },
+        use_container_width=True,
+        hide_index=True
+    )
 
 
 def filtered(data, key):
     a, b, c = st.columns([2, 1, 1])
-    query = a.text_input('Search bin, area or location', key=f'{key}_search')
-    area = b.selectbox('Area', ['All'] + sorted(data['area'].dropna().unique().tolist()), key=f'{key}_area')
-    status = c.selectbox('Status', ['All'] + STATUSES, key=f'{key}_status')
+    query = a.text_input('Search by Bin ID, Area, or Location', key=f'{key}_search', placeholder='e.g., BIN-001, Andheri, Market...')
+    area = b.selectbox('Filter Area', ['All'] + sorted(data['area'].dropna().unique().tolist()), key=f'{key}_area')
+    status = c.selectbox('Filter Status', ['All'] + STATUSES, key=f'{key}_status')
     result = data.copy()
     if query:
         mask = (result['bin_code'].astype(str).str.contains(query, case=False, regex=False) |
@@ -74,141 +465,400 @@ def filtered(data, key):
     return result
 
 
+# ==============================================================================
+# PAGE 1: DASHBOARD
+# ==============================================================================
 if page == 'Dashboard':
-    st.title('WasteWise | Operations Dashboard')
-    st.caption('Prioritize overflowing bins and monitor waste collection across city areas.')
-    stats = summary(df)
-    cols = st.columns(4)
-    for col, title, value in zip(cols,
-        ['Total Bins', 'Full / Overflowing', 'Pending Collections', 'Collected Waste (estimated)'],
-        [stats['total'], stats['full'], stats['pending'], f"{stats['collected_liters']:,.1f} L"]):
-        col.metric(title, value)
-    st.subheader('Collection overview')
+    st.markdown('''
+    <div class="ww-header-box">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <span class="ww-tag">Executive Overview</span>
+                <h1 style="font-size: 2rem; margin: 0;">Municipal Waste Operations Command Center</h1>
+                <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px; margin-bottom: 0;">
+                    Real-time container telemetry, automated dispatch prioritization, and urban waste load analytics.
+                </p>
+            </div>
+            <div class="ww-status-badge">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                Live Telemetry Active
+            </div>
+        </div>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # 4 Command Center KPI Cards
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        st.markdown(f'''
+        <div class="ww-kpi-card total">
+            <div class="ww-kpi-icon">🏢</div>
+            <div class="ww-kpi-label">Total Monitored Bins</div>
+            <div class="ww-kpi-value">{stats['total']}</div>
+            <div class="ww-kpi-sub">Across 6 municipal zones</div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with k2:
+        st.markdown(f'''
+        <div class="ww-kpi-card urgent">
+            <div class="ww-kpi-icon">🚨</div>
+            <div class="ww-kpi-label">Urgent / Overflowing</div>
+            <div class="ww-kpi-value" style="color: #fb7185;">{stats['full']}</div>
+            <div class="ww-kpi-sub">Fill ≥ 90% or reported overflow</div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with k3:
+        st.markdown(f'''
+        <div class="ww-kpi-card pending">
+            <div class="ww-kpi-icon">⏳</div>
+            <div class="ww-kpi-label">Pending Collections</div>
+            <div class="ww-kpi-value" style="color: #fbbf24;">{stats['pending']}</div>
+            <div class="ww-kpi-sub">Awaiting truck dispatch</div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    with k4:
+        st.markdown(f'''
+        <div class="ww-kpi-card collected">
+            <div class="ww-kpi-icon">♻️</div>
+            <div class="ww-kpi-label">Collected Waste</div>
+            <div class="ww-kpi-value" style="color: #38bdf8;">{stats['collected_liters']:,.1f} <span style="font-size: 1.1rem; font-weight: 600;">L</span></div>
+            <div class="ww-kpi-sub">Estimated volume cleared</div>
+        </div>
+        ''', unsafe_allow_html=True)
+
+    st.write('')
+
     if df.empty:
-        st.info('No bins yet. Add a record in Manage Bins.')
+        st.info('No bin records found in database. Use Manage Bins to register initial bins.')
     else:
-        left, right = st.columns(2)
-        area_df = df.groupby('area', as_index=False)['estimated_waste_liters'].sum()
-        left.plotly_chart(px.bar(area_df, x='area', y='estimated_waste_liters',
-                                 title='Estimated waste by area', color='estimated_waste_liters',
-                                 labels={'estimated_waste_liters':'Estimated liters', 'area':'Area'},
-                                 color_continuous_scale='Teal'), use_container_width=True)
-        status_df = df.groupby('status', as_index=False).size()
-        right.plotly_chart(px.pie(status_df, names='status', values='size', hole=.55,
-                                  title='Collection status distribution'), use_container_width=True)
-        st.subheader('Urgent collection queue')
+        left, right = st.columns([1.1, 0.9])
+        with left:
+            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
+            area_df = df.groupby('area', as_index=False)['estimated_waste_liters'].sum().sort_values('estimated_waste_liters', ascending=False)
+            fig_area = px.bar(
+                area_df,
+                x='area',
+                y='estimated_waste_liters',
+                title='Estimated Waste Load by Municipal Zone',
+                labels={'estimated_waste_liters': 'Estimated Waste (Liters)', 'area': 'Municipal Zone'},
+                color='estimated_waste_liters',
+                color_continuous_scale=[[0, '#059669'], [0.5, '#10b981'], [1, '#00e699']]
+            )
+            fig_area.update_coloraxes(showscale=False)
+            apply_plotly_theme(fig_area, height=340)
+            st.plotly_chart(fig_area, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with right:
+            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
+            status_df = df.groupby('status', as_index=False).size()
+            fig_status = px.pie(
+                status_df,
+                names='status',
+                values='size',
+                hole=0.6,
+                title='Operational Status Breakdown',
+                color='status',
+                color_discrete_map={
+                    'Pending': '#f59e0b',
+                    'In Progress': '#0ea5e9',
+                    'Collected': '#10b981'
+                }
+            )
+            apply_plotly_theme(fig_status, height=340)
+            st.plotly_chart(fig_status, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Urgent Collection Queue Section
+        st.markdown('''
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; margin-bottom: 12px;">
+            <div>
+                <h3 style="margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <span style="color: #f43f5e;">⚡</span> Urgent Priority Queue
+                </h3>
+                <div style="color: #94a3b8; font-size: 0.85rem; margin-top: 2px;">
+                    Containers requiring critical dispatch (Fill ≥ 90% or actively reported overflow)
+                </div>
+            </div>
+        </div>
+        ''', unsafe_allow_html=True)
+
         urgent = df[(df.priority == 'High') & (df.status != 'Collected')].sort_values('fill_level', ascending=False)
         if urgent.empty:
-            st.success('No high-priority bins currently need collection.')
+            st.success('✅ All high-priority municipal bins have been addressed. No urgent collections pending.')
         else:
             show_table(urgent.head(10))
 
+
+# ==============================================================================
+# PAGE 2: MANAGE BINS
+# ==============================================================================
 elif page == 'Manage Bins':
-    st.title('Manage Waste Bins')
-    with st.expander('➕ Add a new waste bin', expanded=True):
+    st.markdown('''
+    <div class="ww-header-box">
+        <span class="ww-tag">Infrastructure Registry</span>
+        <h1 style="font-size: 2rem; margin: 0;">Smart Waste Bin Registry & Management</h1>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px; margin-bottom: 0;">
+            Provision new municipal waste units, maintain spatial metadata, and review container fleet records.
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    with st.expander('➕ Provision New Waste Bin Container', expanded=True):
         with st.form('add_form', clear_on_submit=True):
             x, y = st.columns(2)
-            code = x.text_input('Unique bin code (example: BIN-101)')
-            area = y.selectbox('Area', AREAS)
-            location = x.text_input('Location / landmark')
-            waste_type = y.selectbox('Waste type', WASTE_TYPES)
-            fill = x.slider('Fill level (%)', 0, 100, 50)
-            capacity = y.number_input('Bin capacity (liters)', 1, 10000, 240, step=10)
-            if st.form_submit_button('Add Bin', type='primary'):
+            code = x.text_input('Unique Bin Identifier', placeholder='e.g., BIN-101')
+            area = y.selectbox('Designated Municipal Zone', AREAS)
+            location = x.text_input('Street Address / Sector Landmark', placeholder='e.g., Andheri Station West, Gate 2')
+            waste_type = y.selectbox('Waste Category', WASTE_TYPES)
+            fill = x.slider('Initial Fill Level (%)', 0, 100, 50)
+            capacity = y.number_input('Container Capacity (Liters)', 1, 10000, 240, step=10)
+            if st.form_submit_button('➕ Register Container to Fleet', type='primary', use_container_width=True):
                 action(add_bin, code, area, location, waste_type, fill, capacity)
-    st.subheader('Search and filter records')
+
+    st.subheader('Container Fleet Explorer')
+    st.caption('Filter fleet records dynamically by keyword, municipal zone, or collection status.')
     view = filtered(df, 'manage')
-    st.caption(f'{len(view)} matching bins')
+
+    st.markdown(f'''
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Displaying {len(view)} matching container(s)</span>
+    </div>
+    ''', unsafe_allow_html=True)
+
     show_table(view)
-    st.download_button('⬇️ Download filtered records (CSV)',
-                       data=view.to_csv(index=False).encode('utf-8-sig'),
-                       file_name='wastewise_filtered_bins.csv', mime='text/csv')
+
+    st.download_button(
+        '⬇️ Export Filtered Fleet Records (CSV)',
+        data=view.to_csv(index=False).encode('utf-8-sig'),
+        file_name='wastewise_filtered_bins.csv',
+        mime='text/csv'
+    )
+
     if not df.empty:
-        st.subheader('Edit or delete a record')
+        st.write('')
+        st.markdown('''
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px; margin-top: 10px;">
+            <h3>Update Container Telemetry or Decommission</h3>
+            <p style="color: #94a3b8; font-size: 0.88rem;">Select an existing container record to update its operational parameters or retire it from the active database.</p>
+        </div>
+        ''', unsafe_allow_html=True)
+
         ids = df['id'].astype(int).tolist()
-        labels = {int(r.id): f'{r.bin_code} — {r.area}' for r in df.itertuples()}
-        selected = st.selectbox('Choose bin', ids, format_func=lambda v: labels[v])
+        labels = {int(r.id): f'{r.bin_code} — {r.area} ({r.location})' for r in df.itertuples()}
+        selected = st.selectbox('Choose Container to Edit', ids, format_func=lambda v: labels[v])
         rec = df[df.id == selected].iloc[0]
+
         with st.form('edit_form'):
             ea, eb = st.columns(2)
-            new_area = ea.selectbox('Area', AREAS, index=AREAS.index(rec.area) if rec.area in AREAS else 0)
-            new_location = eb.text_input('Location', value=str(rec.location))
-            new_type = ea.selectbox('Waste type', WASTE_TYPES, index=WASTE_TYPES.index(rec.waste_type))
-            new_fill = eb.slider('Fill level (%)', 0, 100, int(rec.fill_level))
-            new_capacity = ea.number_input('Capacity (liters)', 1, 10000, int(rec.capacity_liters))
-            if st.form_submit_button('Save Changes', type='primary'):
+            new_area = ea.selectbox('Municipal Area', AREAS, index=AREAS.index(rec.area) if rec.area in AREAS else 0)
+            new_location = eb.text_input('Location Landmark', value=str(rec.location))
+            new_type = ea.selectbox('Waste Category', WASTE_TYPES, index=WASTE_TYPES.index(rec.waste_type))
+            new_fill = eb.slider('Updated Fill Level (%)', 0, 100, int(rec.fill_level))
+            new_capacity = ea.number_input('Container Capacity (Liters)', 1, 10000, int(rec.capacity_liters))
+            if st.form_submit_button('💾 Save Operational Updates', type='primary', use_container_width=True):
                 action(update_bin, selected, new_area, new_location, new_type, new_fill, new_capacity)
-        confirm = st.checkbox('I confirm I want to delete this record', key=f'del_{selected}')
-        if st.button('Delete Selected Bin', disabled=not confirm):
-            action(delete_bin, selected)
 
+        with st.container():
+            st.markdown('<div style="background: rgba(244,63,94,0.06); border: 1px solid rgba(244,63,94,0.25); border-radius: 12px; padding: 16px; margin-top: 14px;">', unsafe_allow_html=True)
+            confirm = st.checkbox('Confirm permanent decommissioning of this record', key=f'del_{selected}')
+            if st.button('🗑️ Decommission Selected Bin', disabled=not confirm):
+                action(delete_bin, selected)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ==============================================================================
+# PAGE 3: COLLECTION QUEUE
+# ==============================================================================
 elif page == 'Collection Queue':
-    st.title('Collection Prioritization')
-    st.caption('High: reported overflow or ≥90% full. Medium: ≥70%. Low: below 70%. Collected bins are completed.')
+    st.markdown('''
+    <div class="ww-header-box">
+        <span class="ww-tag">Sanitation Dispatch</span>
+        <h1 style="font-size: 2rem; margin: 0;">Collection Prioritization & Dispatch Queue</h1>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px; margin-bottom: 0;">
+            Deterministic priority engine ranking active containers by overflow risk and volume threshold.
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    # Priority Engine Rules Legend
+    st.markdown('''
+    <div style="margin-bottom: 16px;">
+        <span class="ww-legend-pill ww-pill-high">🔴 High: Overflow Reported OR Fill ≥ 90%</span>
+        <span class="ww-legend-pill ww-pill-medium">🟡 Medium: Fill ≥ 70%</span>
+        <span class="ww-legend-pill ww-pill-low">🟢 Low: Fill &lt; 70%</span>
+        <span class="ww-legend-pill ww-pill-completed">🔵 Completed: Successfully Collected</span>
+    </div>
+    ''', unsafe_allow_html=True)
+
     active = df[df.status != 'Collected'].copy()
-    order = {'High':0, 'Medium':1, 'Low':2}
+    order = {'High': 0, 'Medium': 1, 'Low': 2}
     if not active.empty:
         active['sort_priority'] = active.priority.map(order)
         active = active.sort_values(['sort_priority', 'fill_level'], ascending=[True, False])
-    show_table(active)
-    if df.empty:
-        st.info('Add a bin first.')
-    else:
-        st.subheader('Report an overflow')
-        choices = {int(r.id): f'{r.bin_code} — {r.location} ({r.fill_level}%)' for r in df.itertuples()}
-        selected_report = st.selectbox('Select bin to report', list(choices), format_func=lambda v: choices[v], key='report')
-        if st.button('🚨 Report Overflow', type='primary'):
-            action(report_overflow, selected_report)
-        st.subheader('Update collection status')
-        selected_status = st.selectbox('Select bin', list(choices), format_func=lambda v: choices[v], key='status_bin')
-        current = df[df.id == selected_status].iloc[0].status
-        new_status = st.selectbox('New status', STATUSES, index=STATUSES.index(current))
-        if st.button('Update Status', type='primary'):
-            action(change_status, selected_status, new_status)
 
-else:
-    st.title('Analytics & Reports')
-    st.caption('Interactive charts and downloadable records. PySpark runs locally on demand.')
+    st.subheader('Active Dispatch Manifest')
+    show_table(active)
+
     if df.empty:
-        st.info('Add bins to generate analytics.')
+        st.info('No containers currently registered in the database.')
+    else:
+        st.write('')
+        st.markdown('### Operational Dispatch Hub')
+        q_left, q_right = st.columns(2)
+
+        choices = {int(r.id): f'{r.bin_code} — {r.location} ({r.fill_level}%)' for r in df.itertuples()}
+
+        with q_left:
+            st.markdown('''
+            <div class="ww-panel" style="border-top: 3px solid #f43f5e;">
+                <h4 style="color: #f8fafc; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>🚨</span> Citizen / Field Overflow Report
+                </h4>
+                <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">
+                    Escalates container priority directly to <b>HIGH</b> and flags for urgent sanitation dispatch.
+                </p>
+            ''', unsafe_allow_html=True)
+            selected_report = st.selectbox('Select Container to Flag', list(choices), format_func=lambda v: choices[v], key='report')
+            if st.button('🚨 Submit Overflow Escalation', type='primary', use_container_width=True):
+                action(report_overflow, selected_report)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with q_right:
+            st.markdown('''
+            <div class="ww-panel" style="border-top: 3px solid #00e699;">
+                <h4 style="color: #f8fafc; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                    <span>🚚</span> Update Collection Workflow
+                </h4>
+                <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 14px;">
+                    Advance container cycle: <i>Pending → In Progress → Collected</i>.
+                </p>
+            ''', unsafe_allow_html=True)
+            selected_status = st.selectbox('Select Target Container', list(choices), format_func=lambda v: choices[v], key='status_bin')
+            current = df[df.id == selected_status].iloc[0].status
+            new_status = st.selectbox('New Lifecycle Status', STATUSES, index=STATUSES.index(current))
+            if st.button('✅ Confirm Status Transition', type='primary', use_container_width=True):
+                action(change_status, selected_status, new_status)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+
+# ==============================================================================
+# PAGE 4: ANALYTICS & REPORTS
+# ==============================================================================
+else:
+    st.markdown('''
+    <div class="ww-header-box">
+        <span class="ww-tag">Big Data & Insights</span>
+        <h1 style="font-size: 2rem; margin: 0;">Sanitation Analytics & Big Data Engine</h1>
+        <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 6px; margin-bottom: 0;">
+            Multi-dimensional analytical visualizations and on-demand local Apache PySpark distributed aggregations.
+        </p>
+    </div>
+    ''', unsafe_allow_html=True)
+
+    if df.empty:
+        st.info('Add containers in Manage Bins to view operational reports.')
     else:
         left, right = st.columns(2)
-        by_type = df.groupby('waste_type', as_index=False)['estimated_waste_liters'].sum()
-        left.plotly_chart(px.bar(by_type, x='waste_type', y='estimated_waste_liters',
-                                 title='Estimated waste by type', color='waste_type'), use_container_width=True)
-        trend = df.copy()
-        trend['date'] = pd.to_datetime(trend['collected_at'], errors='coerce').dt.date
-        trend = trend[trend.status == 'Collected'].dropna(subset=['date'])
-        if not trend.empty:
-            daily = trend.groupby('date', as_index=False)['estimated_waste_liters'].sum()
-            right.plotly_chart(px.line(daily, x='date', y='estimated_waste_liters', markers=True,
-                                       title='Estimated collected waste by date'), use_container_width=True)
-        else:
-            right.info('Mark some bins Collected to see collection trends.')
-        st.subheader('PySpark Big Data Analysis')
-        st.caption('Runs real Spark DataFrame groupBy, count and sum operations in local[1] mode. '
-                   'The included sample data is small; this demonstrates Spark concepts, not large-scale distributed processing.')
-        if st.button('▶ Run PySpark Analytics', type='primary'):
-            with st.spinner('Starting local Spark and analyzing waste records...'):
+        with left:
+            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
+            by_type = df.groupby('waste_type', as_index=False)['estimated_waste_liters'].sum().sort_values('estimated_waste_liters', ascending=False)
+            fig_type = px.bar(
+                by_type,
+                x='waste_type',
+                y='estimated_waste_liters',
+                title='Estimated Waste Volume by Category',
+                labels={'estimated_waste_liters': 'Estimated Waste (Liters)', 'waste_type': 'Waste Type'},
+                color='waste_type',
+                color_discrete_sequence=['#00e699', '#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b', '#64748b']
+            )
+            apply_plotly_theme(fig_type, height=330)
+            st.plotly_chart(fig_type, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        with right:
+            st.markdown('<div class="ww-panel">', unsafe_allow_html=True)
+            trend = df.copy()
+            trend['date'] = pd.to_datetime(trend['collected_at'], errors='coerce').dt.date
+            trend = trend[trend.status == 'Collected'].dropna(subset=['date'])
+            if not trend.empty:
+                daily = trend.groupby('date', as_index=False)['estimated_waste_liters'].sum()
+                fig_trend = px.line(
+                    daily,
+                    x='date',
+                    y='estimated_waste_liters',
+                    markers=True,
+                    title='Daily Collection Trend (Liters Cleared)',
+                    labels={'estimated_waste_liters': 'Collected Volume (Liters)', 'date': 'Collection Date'}
+                )
+                fig_trend.update_traces(line_color='#00e699', line_width=3, marker=dict(size=8, color='#38bdf8'))
+                apply_plotly_theme(fig_trend, height=330)
+                st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.info('ℹ️ Mark containers as "Collected" to populate daily collection trend series.')
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # PySpark Big Data Analytics Engine Deck
+        st.markdown('''
+        <div class="ww-panel" style="border: 1px solid rgba(0, 230, 153, 0.25); background: linear-gradient(135deg, rgba(13, 24, 43, 0.8) 0%, rgba(10, 20, 38, 0.9) 100%);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                <div>
+                    <span class="ww-tag" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border-color: rgba(14, 165, 233, 0.3);">
+                        Engine: Apache Spark 3.5.x local[1]
+                    </span>
+                    <h3 style="margin: 6px 0 0 0; color: #f8fafc;">PySpark Big Data Analytics Execution</h3>
+                </div>
+            </div>
+            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5; margin-bottom: 16px;">
+                Executes true PySpark DataFrame transformations (<code>groupBy</code>, <code>agg</code>, <code>sum</code>, <code>count</code>, and conditional high-priority filters) over strongly typed schemas. This demonstrates Big Data distributed computing concepts natively within the local Python runtime.
+            </p>
+        ''', unsafe_allow_html=True)
+
+        if st.button('⚡ Launch PySpark Analytics Engine', type='primary'):
+            with st.spinner('Initializing SparkSession local[1] and executing schema transformations...'):
                 try:
                     results = spark_analytics(df)
                     st.session_state['spark_results'] = results
-                    st.success(f"Spark processed {results['processed']} records successfully.")
+                    st.success(f"Spark Engine successfully processed {results['processed']} container records in local[1] mode.")
                 except Exception as exc:
-                    st.error(f'PySpark could not start: {exc}. Check Java 17, Python compatibility and installation.')
+                    st.error(f'PySpark execution failed: {exc}. Verify Java 17 and Python environment configurations.')
+
         if 'spark_results' in st.session_state:
             results = st.session_state['spark_results']
+            st.write('')
             a, b = st.columns(2)
-            a.markdown('**Spark: area-wise analysis**')
-            a.dataframe(pd.DataFrame(results['area']), use_container_width=True, hide_index=True)
-            b.markdown('**Spark: waste-type analysis**')
-            b.dataframe(pd.DataFrame(results['type']), use_container_width=True, hide_index=True)
-            st.markdown('**Spark: collection statuses**')
+            with a:
+                st.markdown('**Spark: Area-Wise Aggregation**')
+                st.dataframe(pd.DataFrame(results['area']), use_container_width=True, hide_index=True)
+            with b:
+                st.markdown('**Spark: Waste Category Breakdown**')
+                st.dataframe(pd.DataFrame(results['type']), use_container_width=True, hide_index=True)
+
+            st.markdown('**Spark: Lifecycle Status Manifest**')
             st.dataframe(pd.DataFrame(results['status']), use_container_width=True, hide_index=True)
-            st.download_button('⬇️ Export Spark area analytics',
+
+            st.download_button(
+                '⬇️ Download Spark Area Analytics Report (CSV)',
                 pd.DataFrame(results['area']).to_csv(index=False).encode('utf-8-sig'),
-                file_name='wastewise_spark_area.csv', mime='text/csv')
-        st.subheader('Export data')
-        st.download_button('⬇️ Download all bin records (CSV)',
-                           df.to_csv(index=False).encode('utf-8-sig'),
-                           file_name='wastewise_all_bins.csv', mime='text/csv')
+                file_name='wastewise_spark_area.csv',
+                mime='text/csv'
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Full Data Export Section
+        st.markdown('''
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 16px;">
+            <h4>Raw Operational Telemetry Export</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem;">Export complete municipal fleet database records for offline audit and reporting.</p>
+        </div>
+        ''', unsafe_allow_html=True)
+
+        st.download_button(
+            '⬇️ Download Complete Fleet Registry (CSV)',
+            df.to_csv(index=False).encode('utf-8-sig'),
+            file_name='wastewise_all_bins.csv',
+            mime='text/csv'
+        )

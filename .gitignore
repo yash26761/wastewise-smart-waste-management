@@ -35,7 +35,8 @@ derby.log
 *.jar
 
 # Streamlit temporary / run files
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 
 # Testing and Coverage
 .pytest_cache/
