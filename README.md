@@ -1,4 +1,4 @@
-# ♻️ WasteWise — Smart Waste Management & Collection Prioritization System
+# ♻️ WasteWise — Smart City Waste Management Command Center
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.39+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -7,7 +7,7 @@
 [![Visualizations](https://img.shields.io/badge/Plotly-5.24+-3F4F75?logo=plotly&logoColor=white)](https://plotly.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An intelligent, data-driven municipal waste management platform featuring real-time fill tracking, deterministic collection prioritization, and on-demand local **Apache PySpark** analytical aggregations.
+An executive-grade, data-driven municipal waste management platform featuring real-time container fill telemetry, deterministic collection prioritization, dark Plotly visualizations, and on-demand local **Apache PySpark** Big Data aggregations.
 
 ---
 
@@ -24,19 +24,19 @@ Municipal waste collection in rapidly growing urban centers faces several operat
 
 ## ✨ Features
 
-- **📊 Central Operational Dashboard:** Real-time visibility into key operational KPIs:
+- **📊 Central Operations Command Center:** Real-time visibility into key operational KPIs:
   - Total monitored bins across municipal zones.
   - Urgent/overflowing bins requiring immediate collection.
   - Pending collection queue length.
   - Cumulative collected waste volume (estimated liters).
-- **🚨 Smart Collection Prioritization:**
+- **🚨 Smart Collection Prioritization Engine:**
   - **High:** Bins with reported overflow or fill level $\ge 90\%$.
   - **Medium:** Bins with fill level between $70\%$ and $89\%$.
   - **Low:** Bins with fill level below $70\%$.
   - **Completed:** Fully collected bins removed from active priority queues.
 - **📝 Bin Lifecycle Management (CRUD):** Add, update, delete, search, and filter bins by municipal area, status, and waste type.
 - **⚡ PySpark Big Data Analytics:** Executes true local Apache Spark (`local[1]`) DataFrames with strongly-typed schemas to run multi-dimensional grouping, sum, and conditional count aggregations.
-- **📈 Interactive Plotly Visualizations:** Dynamic visual breakdowns of waste generation by category and daily collection completion trends.
+- **📈 Dark Plotly Visualizations:** Dynamic visual breakdowns of waste generation by category and daily collection completion trends.
 - **📥 Data Portability:** Download full raw operational records and PySpark analytical summary tables in CSV format.
 - **🔄 Auto-Seeding Database:** Self-initializing SQLite database with 36 reproducible simulated municipal bins across 6 major zones.
 
@@ -81,7 +81,10 @@ Municipal waste collection in rapidly growing urban centers faces several operat
 ```text
 WasteWise/
 ├── .gitignore              # Ignores venv, SQLite DB, cache, and sensitive files
+├── .streamlit/
+│   └── config.toml         # Streamlit dark theme & midnight-navy UI settings
 ├── README.md               # Project documentation and setup guide
+├── LICENSE                 # MIT License
 ├── requirements.txt        # Pinned Python package dependencies
 ├── app.py                  # Streamlit application UI, navigation, and pages
 ├── analytics.py            # Pandas metrics and PySpark SparkSession aggregations
@@ -119,11 +122,11 @@ py -3.11 --version
 
 1. **Clone the repository:**
    ```powershell
-   git clone https://github.com/<your-username>/wastewise-smart-waste-management.git
+   git clone https://github.com/yash26761/wastewise-smart-waste-management.git
    cd wastewise-smart-waste-management
    ```
 
-2. **Create and activate a virtual environment:**
+2. **Create and activate an isolated virtual environment:**
    ```powershell
    py -3.11 -m venv .venv
    .\.venv\Scripts\Activate.ps1
@@ -145,9 +148,16 @@ py -3.11 --version
 
 ---
 
+## 🔄 Sample Data Setup & Reset
+
+- On the very first application startup, `database.py` automatically initializes `wastewise.db` and generates **36 reproducible simulated municipal bins** across 6 zones (`Andheri`, `Bandra`, `Borivali`, `Dadar`, `Kurla`, `Powai`) with realistic fill levels, capacities, and statuses.
+- **How to Reset Demo Data:** Stop Streamlit, delete `wastewise.db`, and restart `streamlit run app.py`. The sample dataset will be regenerated cleanly.
+
+---
+
 ## 🔬 What PySpark Does in WasteWise
 
-When you click **"▶ Run PySpark Analytics"** on the **Analytics & Reports** page:
+When you click **"⚡ Launch PySpark Analytics Engine"** on the **Analytics & Reports** page:
 1. **Isolated Session Initialization:** Initializes a local Spark session (`local[1]`) with optimal single-node driver memory settings.
 2. **Interpreter Alignment:** PySpark is explicitly configured to bind workers to the active Python 3.11 virtual environment executable (`spark.pyspark.python`), avoiding version mismatch errors on multi-Python installations.
 3. **Structured Schema Mapping:** Operates over a formal `StructType` schema (`area`, `waste_type`, `status`, `priority`, `estimated_waste_liters`).
@@ -159,18 +169,36 @@ When you click **"▶ Run PySpark Analytics"** on the **Analytics & Reports** pa
 
 ---
 
+## 📋 Step-by-Step Demonstration Guide
+
+For project presentation and viva demonstration:
+
+1. **Dashboard Overview:** Open `Dashboard`. Observe the 4 KPI cards (36 total bins, urgent counts, pending collections, collected volume), the area load chart, and status donut chart.
+2. **Review Urgent Queue:** Check the Urgent Collection Queue table displaying bins $\ge 90\%$ full with visual progress bars.
+3. **Add a Container:** Navigate to `Manage Bins`. Expand "Provision New Waste Bin", input code `BIN-101`, area `Andheri`, location `College Gate`, type `Plastic`, fill `95%`, capacity `240L`. Click Register. Total count increases to 37 with High priority.
+4. **Validation Test:** Attempt adding `BIN-101` again. Confirm the SQLite unique constraint error is caught gracefully without duplicating data.
+5. **Edit Telemetry:** Select `BIN-101`, adjust fill level to `75%`, and click Save Changes. The priority recomputes to Medium.
+6. **Citizen Overflow Report:** Navigate to `Collection Queue`, select `BIN-101`, and click **🚨 Submit Overflow Escalation**. Priority immediately escalates back to High.
+7. **Status Workflow:** Update status from `Pending` → `In Progress` → `Collected`. The bin completes collection and updates the cumulative collected waste metric.
+8. **Filter & Search:** In `Manage Bins`, filter by zone `Andheri` or search `College Gate` to locate records instantly.
+9. **Run PySpark Engine:** Navigate to `Analytics & Reports` and click **⚡ Launch PySpark Analytics Engine**. Observe the processing of all 37 records into structured Spark aggregation tables.
+10. **CSV Export:** Download both the filtered records CSV and the PySpark Area Analytics CSV.
+11. **Decommission Bin:** Return to `Manage Bins`, select `BIN-101`, confirm the checkbox, and click Decommission. The fleet count returns to 36.
+
+---
+
 ## 🖼️ Application Walkthrough & Screenshots
 
-> *Tip: Add your captured screenshots in a `docs/screenshots/` folder to preview them here.*
+> *Add your captured demonstration screenshots to a `docs/screenshots/` folder to preview them here.*
 
-| Dashboard Overview | Collection Queue |
+| Command Center Dashboard | Priority Collection Queue |
 | :---: | :---: |
-| ![Dashboard Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=WasteWise+Dashboard+Overview) | ![Queue Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=Collection+Prioritization+Queue) |
-| *Real-time KPI metrics and area-wise waste distribution.* | *Prioritized collection queue with overflow reporting.* |
+| ![Dashboard Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=WasteWise+Command+Center) | ![Queue Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=Collection+Prioritization+Queue) |
+| *Real-time KPI metrics, dark Plotly charts, and urgent queue.* | *Prioritized collection queue with fill progress bars.* |
 
-| PySpark Big Data Analysis | Manage Bins (CRUD) |
+| PySpark Big Data Engine | Fleet Registry (CRUD) |
 | :---: | :---: |
-| ![Spark Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=PySpark+DataFrame+Analytics) | ![CRUD Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=Bin+Management+CRUD) |
+| ![Spark Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=PySpark+Big+Data+Engine) | ![CRUD Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=Bin+Fleet+Registry) |
 | *Spark DataFrame aggregation results and CSV export.* | *Full bin registration, editing, validation, and search.* |
 
 ---
