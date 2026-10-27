@@ -83,6 +83,7 @@ WasteWise/
 ├── .gitignore              # Ignores venv, SQLite DB, cache, and sensitive files
 ├── .streamlit/
 │   └── config.toml         # Streamlit dark theme & midnight-navy UI settings
+├── screenshots/            # Application screenshots and command center media
 ├── README.md               # Project documentation and setup guide
 ├── LICENSE                 # MIT License
 ├── requirements.txt        # Pinned Python package dependencies
@@ -187,19 +188,55 @@ For project presentation and viva demonstration:
 
 ---
 
-## 🖼️ Application Walkthrough & Screenshots
+## 📸 Application Screenshots
 
-> *Add your captured demonstration screenshots to a `docs/screenshots/` folder to preview them here.*
+Explore the key interfaces of the WasteWise Smart Waste Management platform, captured live from the running application:
 
-| Command Center Dashboard | Priority Collection Queue |
-| :---: | :---: |
-| ![Dashboard Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=WasteWise+Command+Center) | ![Queue Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=Collection+Prioritization+Queue) |
-| *Real-time KPI metrics, dark Plotly charts, and urgent queue.* | *Prioritized collection queue with fill progress bars.* |
+### 1. Operations Command Center & Executive Dashboard
 
-| PySpark Big Data Engine | Fleet Registry (CRUD) |
-| :---: | :---: |
-| ![Spark Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=PySpark+Big+Data+Engine) | ![CRUD Preview](https://via.placeholder.com/600x350/0b1322/00e699?text=Bin+Fleet+Registry) |
-| *Spark DataFrame aggregation results and CSV export.* | *Full bin registration, editing, validation, and search.* |
+Real-time operational command center displaying active municipal telemetry, key performance indicator (KPI) metric cards (Total Fleet, Critical Attention Needed, Pending Collections, Total Waste Collected), zone-level capacity load distribution, and fleet status breakdown.
+
+![Operations Command Center & Executive Dashboard](screenshots/01_dashboard_overview.png)
+
+---
+
+### 2. Smart Fleet Registry & Bin Provisioning (CRUD)
+
+Municipal bin management interface featuring new container registration with input validation, telemetry updates, citizen overflow status, and interactive search and filter across municipal wards.
+
+![Municipal Bin Registry & Fleet Explorer](screenshots/02_manage_bins.png)
+
+---
+
+### 3. Dynamic Priority Collection Queue & Dispatch Hub
+
+Automated collection dispatch queue powered by dynamic multi-factor priority rules (High, Medium, Low), visual fill-percentage meters, citizen overflow escalation handling, and operational status transitions (`Pending` → `In Progress` → `Collected`).
+
+![Priority Collection Queue & Dispatch Hub](screenshots/03_collection_queue.png)
+
+---
+
+### 4. Interactive Waste Analytics & Trend Insights
+
+Dark-themed Plotly visual intelligence charts highlighting waste volume distributions across categories (Wet, Dry, Plastic, Paper, Mixed, E-Waste) and historical 7-day municipal collection volume trends.
+
+![Waste Analytics & Trend Insights](screenshots/04_analytics_charts.png)
+
+---
+
+### 5. Distributed PySpark Big Data Processing Engine
+
+In-memory Apache Spark 3.5.x local distributed processing engine executing batch aggregations across zone wards and waste categories directly from SQLite telemetry records.
+
+![PySpark Big Data Analytics Engine](screenshots/05_pyspark_engine.png)
+
+---
+
+### 6. Operational Status Manifest & CSV Data Export Center
+
+Complete fleet status manifest and instant CSV report generation center for filtered municipal records and distributed PySpark aggregation metrics.
+
+![Operational Status Manifest & CSV Export Center](screenshots/06_csv_reports_export.png)
 
 ---
 
