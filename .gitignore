@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Database and Local Data
+*.db
+*.sqlite
+*.sqlite3
+wastewise.db
+test.db
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+secrets.toml
+.streamlit/secrets.toml
+
+# PySpark / Hadoop runtime files
+spark-warehouse/
+metastore_db/
+derby.log
+*.jar
+
+# Streamlit temporary / run files
+.streamlit/
+
+# Testing and Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Generated Exports / Datasets
+wastewise_all_bins.csv
+wastewise_spark_area.csv
+*.csv
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
