@@ -161,17 +161,20 @@ When you click **"▶ Run PySpark Analytics"** on the **Analytics & Reports** pa
 
 ## 🖼️ Application Walkthrough & Screenshots
 
-> *Tip: Add your captured screenshots in a `docs/screenshots/` folder to preview them here.*
-
-| Dashboard Overview | Collection Queue |
+| 1. Dashboard Overview | 2. Manage Bins (CRUD) |
 | :---: | :---: |
-| ![Dashboard Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=WasteWise+Dashboard+Overview) | ![Queue Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=Collection+Prioritization+Queue) |
-| *Real-time KPI metrics and area-wise waste distribution.* | *Prioritized collection queue with overflow reporting.* |
+| ![Dashboard Overview](docs/screenshots/01_dashboard_overview.png) | ![Manage Bins (CRUD)](docs/screenshots/02_manage_bins.png) |
+| *Real-time KPI metrics, area-wise waste generation, and collection status breakdown.* | *Full bin registration, editing, instant search filtering, and record management.* |
 
-| PySpark Big Data Analysis | Manage Bins (CRUD) |
+| 3. Collection Queue | 4. Analytics & Visualizations |
 | :---: | :---: |
-| ![Spark Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=PySpark+DataFrame+Analytics) | ![CRUD Preview](https://via.placeholder.com/600x350/101c30/ecf8f4?text=Bin+Management+CRUD) |
-| *Spark DataFrame aggregation results and CSV export.* | *Full bin registration, editing, validation, and search.* |
+| ![Collection Queue](docs/screenshots/03_collection_queue.png) | ![Analytics & Visualizations](docs/screenshots/04_analytics_charts.png) |
+| *Prioritized collection queue with overflow reporting and status update controls.* | *Interactive Plotly visual breakdowns by waste category and collection timeline.* |
+
+| 5. PySpark Big Data Analysis | 6. CSV Reports & Data Export |
+| :---: | :---: |
+| ![PySpark Big Data Analysis](docs/screenshots/05_pyspark_engine.png) | ![CSV Reports & Data Export](docs/screenshots/06_csv_reports_export.png) |
+| *Live Spark DataFrame aggregation results across municipal wards and waste streams.* | *Collection status distribution summary and one-click CSV analytical exports.* |
 
 ---
 

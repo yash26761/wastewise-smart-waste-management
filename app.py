@@ -10,12 +10,24 @@ from analytics import frame, summary, spark_analytics
 st.set_page_config(page_title='WasteWise | Smart Waste Management', page_icon='♻️',
                    layout='wide', initial_sidebar_state='expanded')
 st.markdown('''<style>
-.stApp {background: #0b1220; color: #e6eef8;}
-[data-testid="stSidebar"] {background: #101c30;}
-[data-testid="stMetric"] {background: #15243a; border: 1px solid #253e55;
+.stApp {background: #070d18; color: #f1f5f9;}
+[data-testid="stSidebar"] {background: #0a1324; border-right: 1px solid rgba(255, 255, 255, 0.08);}
+[data-testid="stMetric"] {background: #0e192d; border: 1px solid rgba(255, 255, 255, 0.08);
  border-radius: 14px; padding: 17px;}
-h1,h2,h3 {color:#ecf8f4!important;}
-div.stButton>button[kind="primary"] {background:#078c74; border-color:#078c74;}
+[data-testid="column"]:nth-of-type(1) [data-testid="stMetric"] {border-left: 4px solid #00e699;}
+[data-testid="column"]:nth-of-type(2) [data-testid="stMetric"] {border-left: 4px solid #f43f5e;}
+[data-testid="column"]:nth-of-type(3) [data-testid="stMetric"] {border-left: 4px solid #f59e0b;}
+[data-testid="column"]:nth-of-type(4) [data-testid="stMetric"] {border-left: 4px solid #0ea5e9;}
+h1,h2,h3 {color:#f8fafc!important;}
+h4,h5,h6 {color:#cbd5e1!important;}
+.stCaption, [data-testid="stCaptionContainer"] {color:#94a3b8!important;}
+div.stButton>button[kind="primary"] {background:linear-gradient(135deg, #00c885 0%, #059669 100%)!important; border-color:#00c885!important; color:#ffffff!important;}
+div.stButton>button:not([kind="primary"]) {background:#0f1d35!important; border-color:rgba(255, 255, 255, 0.12)!important; color:#e2e8f0!important;}
+div.stDownloadButton>button {background:#0f1d35!important; border-color:rgba(0, 230, 153, 0.35)!important; color:#00e699!important;}
+[data-testid="stSidebar"] [data-testid="stRadio"] label:has(input:checked) {color:#00e699!important;}
+div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {border-color:#0ea5e9!important;}
+div[data-testid="stExpander"] {background:#0e1929; border-color:rgba(255, 255, 255, 0.08);}
+[data-testid="stDataFrame"] {border-color:rgba(255, 255, 255, 0.08);}
 </style>''', unsafe_allow_html=True)
 
 try:
@@ -89,13 +101,60 @@ if page == 'Dashboard':
     else:
         left, right = st.columns(2)
         area_df = df.groupby('area', as_index=False)['estimated_waste_liters'].sum()
-        left.plotly_chart(px.bar(area_df, x='area', y='estimated_waste_liters',
-                                 title='Estimated waste by area', color='estimated_waste_liters',
-                                 labels={'estimated_waste_liters':'Estimated liters', 'area':'Area'},
-                                 color_continuous_scale='Teal'), use_container_width=True)
+        area_df = area_df.sort_values('estimated_waste_liters', ascending=False)
+        fig_area = px.bar(
+            area_df, x='area', y='estimated_waste_liters',
+            title='Estimated Waste by Area',
+            labels={'estimated_waste_liters': 'Estimated Liters', 'area': 'Area'},
+            color='area',
+            color_discrete_sequence=['#0ea6e9', '#00e699', '#8b5cf6', '#f43f5e', '#f59e0b', '#06b6d4'],
+            template='plotly_dark'
+        )
+        fig_area.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#f1f5f9', size=11),
+            title=dict(font=dict(color='#f8fafc', size=14)),
+            margin=dict(l=40, r=20, t=40, b=30), height=310,
+            showlegend=False
+        )
+        fig_area.update_xaxes(
+            showgrid=False,
+            tickfont=dict(color='#cbd5e1', size=11),
+            title_font=dict(color='#f1f5f9', size=12)
+        )
+        fig_area.update_yaxes(
+            showgrid=True,
+            gridcolor='rgba(255, 255, 255, 0.10)',
+            tickfont=dict(color='#cbd5e1', size=11),
+            title_font=dict(color='#f1f5f9', size=12)
+        )
+        left.plotly_chart(fig_area, use_container_width=True, theme=None)
+
         status_df = df.groupby('status', as_index=False).size()
-        right.plotly_chart(px.pie(status_df, names='status', values='size', hole=.55,
-                                  title='Collection status distribution'), use_container_width=True)
+        fig_status = px.pie(
+            status_df, names='status', values='size', hole=0.55,
+            title='Collection Status Distribution',
+            color='status',
+            color_discrete_map={
+                'Collected': '#00e699',
+                'In Progress': '#f59e0b',
+                'Pending': '#0ea6e9'
+            },
+            template='plotly_dark'
+        )
+        fig_status.update_traces(
+            textfont=dict(color='#ffffff', size=11),
+            hovertemplate='<b>Status</b>: %{label}<br><b>Count</b>: %{value}<br><b>Share</b>: %{percent}<extra></extra>',
+            marker=dict(line=dict(color='#070d18', width=2))
+        )
+        fig_status.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#f1f5f9', size=11),
+            title=dict(font=dict(color='#f8fafc', size=14)),
+            margin=dict(l=20, r=20, t=40, b=30), height=310,
+            legend=dict(orientation='h', yanchor='bottom', y=-0.15, xanchor='center', x=0.5, font=dict(color='#e2e8f0', size=11))
+        )
+        right.plotly_chart(fig_status, use_container_width=True, theme=None)
         st.subheader('Urgent collection queue')
         urgent = df[(df.priority == 'High') & (df.status != 'Collected')].sort_values('fill_level', ascending=False)
         if urgent.empty:
@@ -174,15 +233,77 @@ else:
     else:
         left, right = st.columns(2)
         by_type = df.groupby('waste_type', as_index=False)['estimated_waste_liters'].sum()
-        left.plotly_chart(px.bar(by_type, x='waste_type', y='estimated_waste_liters',
-                                 title='Estimated waste by type', color='waste_type'), use_container_width=True)
+        by_type = by_type.sort_values('estimated_waste_liters', ascending=False)
+        fig_type = px.bar(
+            by_type, x='waste_type', y='estimated_waste_liters',
+            title='Estimated Waste Volume by Category',
+            labels={'waste_type': 'Waste Type', 'estimated_waste_liters': 'Estimated Waste (Liters)'},
+            color='waste_type',
+            color_discrete_map={
+                'Wet': '#00e699',
+                'Plastic': '#0ea6e9',
+                'E-Waste': '#8b5cf6',
+                'Paper': '#f43f5e',
+                'Dry': '#f59e0b',
+                'Mixed': '#64748b'
+            },
+            template='plotly_dark'
+        )
+        fig_type.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#f1f5f9', size=11),
+            title=dict(font=dict(color='#f8fafc', size=14)),
+            margin=dict(l=40, r=20, t=40, b=30), height=310,
+            showlegend=False
+        )
+        fig_type.update_xaxes(
+            showgrid=False,
+            tickfont=dict(color='#cbd5e1', size=11),
+            title_font=dict(color='#f1f5f9', size=12)
+        )
+        fig_type.update_yaxes(
+            showgrid=True,
+            gridcolor='rgba(255, 255, 255, 0.10)',
+            tickfont=dict(color='#cbd5e1', size=11),
+            title_font=dict(color='#f1f5f9', size=12)
+        )
+        left.plotly_chart(fig_type, use_container_width=True, theme=None)
+
         trend = df.copy()
         trend['date'] = pd.to_datetime(trend['collected_at'], errors='coerce').dt.date
         trend = trend[trend.status == 'Collected'].dropna(subset=['date'])
         if not trend.empty:
             daily = trend.groupby('date', as_index=False)['estimated_waste_liters'].sum()
-            right.plotly_chart(px.line(daily, x='date', y='estimated_waste_liters', markers=True,
-                                       title='Estimated collected waste by date'), use_container_width=True)
+            fig_trend = px.line(
+                daily, x='date', y='estimated_waste_liters', markers=True,
+                title='Estimated Collected Waste by Date',
+                labels={'date': 'Date', 'estimated_waste_liters': 'Collected Waste (Liters)'},
+                template='plotly_dark'
+            )
+            fig_trend.update_traces(
+                line=dict(color='#00e699', width=2.8),
+                marker=dict(color='#0ea6e9', size=7, line=dict(color='#ffffff', width=1)),
+                fill='tozeroy',
+                fillcolor='rgba(0, 230, 153, 0.12)'
+            )
+            fig_trend.update_layout(
+                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#f1f5f9', size=11),
+                title=dict(font=dict(color='#f8fafc', size=14)),
+                margin=dict(l=40, r=20, t=40, b=30), height=310
+            )
+            fig_trend.update_xaxes(
+                showgrid=False,
+                tickfont=dict(color='#cbd5e1', size=11),
+                title_font=dict(color='#f1f5f9', size=12)
+            )
+            fig_trend.update_yaxes(
+                showgrid=True,
+                gridcolor='rgba(255, 255, 255, 0.10)',
+                tickfont=dict(color='#cbd5e1', size=11),
+                title_font=dict(color='#f1f5f9', size=12)
+            )
+            right.plotly_chart(fig_trend, use_container_width=True, theme=None)
         else:
             right.info('Mark some bins Collected to see collection trends.')
         st.subheader('PySpark Big Data Analysis')
